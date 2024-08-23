@@ -6,9 +6,9 @@ public class AIPlayer extends Player{
 		super(playerMark);
 	}
 	
+	@Override
 	public Move findBestMove(GameBoard board) {
 		Minimax minimax = new Minimax();
-		return minimax.findBestMove(board);
+		return minimax.findBestMove(board,playerMark);
 	}
-
 }

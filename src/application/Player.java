@@ -1,8 +1,8 @@
 package application;
 
-public class Player {
+public abstract class Player {
 	
-	private int playerMark; // 1 for X and -1 for O
+	protected int playerMark; // 1 for X and -1 for O
 	
 	public Player(int mark) {
 		playerMark = mark;
@@ -16,7 +16,7 @@ public class Player {
 		playerMark = mark;
 	}
 	
-	public void makeMove(int row, int col, GameBoard board) {
-		board.makeMove(row, col, playerMark);
-	}
+	// Abstract method to make a move
+	public abstract Move findBestMove(GameBoard board);
+	
 }
