@@ -4,11 +4,11 @@ public class AIPlayer extends Player{
 
 	public AIPlayer(int playerMark) {
 		super(playerMark);
-		// TODO Auto-generated constructor stub
 	}
 	
 	public Move findBestMove(GameBoard board) {
-		return null;
+		Minimax minimax = new Minimax();
+		return minimax.findBestMove(board);
 	}
 
 }
