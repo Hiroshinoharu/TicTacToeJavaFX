@@ -17,7 +17,7 @@ public class GameBoard extends GridPane{
 	private AIPlayer aiPlayer;
 	
 	// Create a variable to keep track of the current player
-	private int currentPlayer;
+	private int currentPlayer = 1;
 	
 	// Create a constructor to initialize the game board
 	public GameBoard() {
@@ -30,7 +30,6 @@ public class GameBoard extends GridPane{
 			}
 		});
 		aiPlayer = new AIPlayer(-1); // AI player is player 2 as O
-		currentPlayer = 1; // Human player as X
 		intializeBoard();
 	}
 	
@@ -42,52 +41,81 @@ public class GameBoard extends GridPane{
 				btn.setPrefSize(200, 200);
 				int finalRow = row;
 				int finalCol = col;
-				btn.setOnAction(e -> handleMove(finalRow, finalCol));
+				btn.setOnAction(e -> handlePlayerMove(finalRow, finalCol));
 				buttons[row][col] = btn;
 				this.add(btn, col, row);
 			}
 		}
 	}
 
-	private void handleMove(int row, int col) {
+	private void handlePlayerMove(int row, int col) {
 		// TODO Auto-generated method stub
-		if(makeMove(row, col, currentPlayer)) {
-			buttons[row][col].setText(currentPlayer == 1 ? "X" : "O");
-			int result = checkWin();
-			if(result != -2) {
-				// Handle win or draw
-				System.out.println(result == 1 ? "Player 1 wins!" : result == -1 ? "Player 2 wins!" : "It's a draw!");
-				resetBoard();
-			} else {
-                currentPlayer = currentPlayer == 1 ? -1 : 1; // Switch player
-                if (currentPlayer == -1) {
-                	aiMove();
-                }
-            }
+		if(currentPlayer == 1) {  // Ensure its the player's turn
+			System.out.println("Player is making a move...");
+			if(makeMove(row, col, currentPlayer)) {
+				System.out.println("Move successful!");
+				buttons[row][col].setText("X");  // Update the button text
+				buttons[row][col].setDisable(true);  // Disable the button
+				printBoardState(this);  // Print the board
+				// Check the game status
+				System.out.println("Checking game status...");
+				if(checkWin() == 1) {
+					System.out.println("Player wins!");
+					endGame();
+				} else if (checkWin() == 0) {
+					System.out.println("It's a draw!");
+					endGame();
+				} else {
+					System.out.println("Switching to AI player...");
+					currentPlayer = -1; // Switch to AI player
+					aiMove(); // AI makes a move
+				}
+			}
 		}
 	}
 
+	
 	private void aiMove() {
-		// TODO Auto-generated method stub
-		Move bestMove = aiPlayer.findBestMove(this);
-		makeMove(bestMove.row, bestMove.col, aiPlayer.getPlayerMark());
-		buttons[bestMove.row][bestMove.col].setText("O");
-		int result = checkWin();
-		if (result != -2) {
-			// Handle win or draw
-			System.out.println(result == 1 ? "Player 1 wins!" : result == -1 ? "Player 2 wins!" : "It's a draw!");
-			resetBoard();
-		} else {
-			currentPlayer = 1; // Switch player
+		if(currentPlayer == -1) {
+			Move bestMove = aiPlayer.findBestMove(this);  // AI finds the best move
+			System.out.println("AI is making a move...");
+			if (makeMove(bestMove.getRow(), bestMove.getCol(), currentPlayer)) {
+				System.out.println("Move successful!");
+				buttons[bestMove.getRow()][bestMove.getCol()].setText("O"); // Update the button text
+				buttons[bestMove.getRow()][bestMove.getCol()].setDisable(true); // Disable the button
+				// Check the game status
+				System.out.println("Checking game status...");
+				if (checkWin() == -1) {
+					System.out.println("AI wins!");
+					endGame();
+				} else if (checkWin() == 0) {
+					System.out.println("It's a draw!");
+					endGame();
+				} else {
+					System.out.println("Switching to player...");
+					currentPlayer = 1; // Switch to player
+				}
+			}
 		}
+	}
+	
+	private void endGame() {
+		// TODO Auto-generated method stub
+		System.out.println("Game over!");
+		resetBoard();  // Reset the game board
 	}
 
 	public boolean makeMove(int row, int col, int playerMark) {
-		if (board[row][col] == 0) { // If the cell is empty
-			board[row][col] = playerMark;
-			return true;
+	    System.out.println("Attempting to make move at: (" + row + ", " + col + ") for player: " + playerMark);
+		if (row >= 0 && col >= 0 && row < 3 && col < 3) { // Check bounds and if the cell is empty
+			if (playerMark == 0 || board[row][col] == 0) {
+				board[row][col] = playerMark; // Make the move
+				System.out.println("Move successful!");
+				return true; // If the move is valid
+			}
 		}
-		return false;
+		System.out.println("Move failed. Cell is already taken or out of bounds.");
+		return false; // If the cell is not empty
 	}
 	
 	public int checkWin() {
@@ -131,32 +159,34 @@ public class GameBoard extends GridPane{
 			}
 		}
 		if (boardFull) {
-			for(int i = 0; i < BOARD_SIZE; i++) {
-				if (checkWin() != -2) {
-					return -2;
-				}
-			}
+			return 0;
 		} 
-		return 0;// Return 0 if it's a draw
+		return -2;// Return -2 if the game is still in progress
 	}
 	
 	public void resetBoard() {
 		for (int i = 0; i < BOARD_SIZE; i++) {
 			for (int j = 0; j < BOARD_SIZE; j++) {
 				board[i][j] = 0;
+				buttons[i][j].setText(""); // Clear the text on the buttons
+				buttons[i][j].setDisable(false); // Re-enable the buttons
 			}
 		}
-		resetButtons();
+		System.out.println("Board reset.");
 		currentPlayer = 1; // Reset the current player to player 1
 	}
 	
-	private void resetButtons() {
-		for (int i = 0; i < BOARD_SIZE; i++) {
-			for (int j = 0; j < BOARD_SIZE; j++) {
-				buttons[i][j].setText("");
+	private void printBoardState(GameBoard board) {
+		// TODO Auto-generated method stub
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				System.out.print(board.getBoard()[i][j] + " ");
 			}
+			System.out.println();
 		}
+		System.out.println();
 	}
+	
 
 	public int[][] getBoard() {
 		return board;
