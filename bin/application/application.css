@@ -1,12 +1,36 @@
 /* JavaFX CSS - Leave this comment until you have at least create one rule which uses -fx-Property */
 
+/* Background for the whole application */
 .root{
-	-fx-background-color: #f0f0f0;
+	-fx-background-color: #E0E0E0;
 }
 
-.button{
+/* Style for the gameboard */
+.game-board{
+	-fx-border-color: black;
+	-fx-border-width: 2px;
+	-fx-background-color: white;
+	-fx-padding: 10px; /* Add some padding around the grid */
+	-fx-alignment: center;
+}
+
+.game-board .button{
+	-fx-pref-width: 100px;
+	-fx-pref-height: 100px;
+	-fx-background-color: #f0f0f0;
+	-fx-border-color: #CCCCCC; /*Light border to seperate grid squares */
+	-fx-border-width: 1px;
+	-fx-font-size: 18px;
+	-fx-text-fill: #333333;
+	-fx-background-radius: 5px;
+	-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3),10,0,2,2); 
+}
+
+/*Style for the title */
+.game-label{
+	-fx-text-alignment: justify;
 	-fx-font-size: 24px;
 	-fx-font-weight: bold;
-	-fx-min-width: 100px;
-	-fx-min-height: 100px;
+	-fx-text-fill: #333333;
+	-fx-padding: 10px
 }

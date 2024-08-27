@@ -84,6 +84,7 @@ public class Minimax {
 	                
 	                // Undo the move
 	                board.makeMove(i, j, 0);
+	                System.out.println("Undoing move...");
 
 	                // Update bestMove and bestVal based on whether AI is maximizing or minimizing
 	                if ((playerMark == 1 && moveVal > bestVal) || (playerMark == -1 && moveVal < bestVal)) {

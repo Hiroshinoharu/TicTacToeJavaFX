@@ -16,6 +16,9 @@ public class GameBoard extends GridPane{
 	private Player humanPlayer;
 	private AIPlayer aiPlayer;
 	
+	// Create another human player in case 
+	private Player player2;
+	
 	// Create a variable to keep track of the current player
 	private int currentPlayer = 1;
 	
@@ -38,7 +41,7 @@ public class GameBoard extends GridPane{
 		for(int row = 0; row < BOARD_SIZE; row++) {
 			for(int col = 0; col < BOARD_SIZE; col++) {
 				Button btn = new Button();
-				btn.setPrefSize(200, 200);
+				btn.setPrefSize(150, 150);
 				int finalRow = row;
 				int finalCol = col;
 				btn.setOnAction(e -> handlePlayerMove(finalRow, finalCol));
@@ -46,6 +49,7 @@ public class GameBoard extends GridPane{
 				this.add(btn, col, row);
 			}
 		}
+		this.getStyleClass().add("game-board");
 	}
 
 	private void handlePlayerMove(int row, int col) {
@@ -69,6 +73,32 @@ public class GameBoard extends GridPane{
 					System.out.println("Switching to AI player...");
 					currentPlayer = -1; // Switch to AI player
 					aiMove(); // AI makes a move
+				}
+			}
+		}
+	}
+	
+	private void handlePlayer2Move(int row, int col) {
+		// TODO Auto-generated method stub
+		if(currentPlayer == 1) {  // Ensure its the player's turn
+			System.out.println("Player is making a move...");
+			if(makeMove(row, col, currentPlayer)) {
+				System.out.println("Move successful!");
+				buttons[row][col].setText("O");  // Update the button text
+				buttons[row][col].setDisable(true);  // Disable the button
+				printBoardState(this);  // Print the board
+				// Check the game status
+				System.out.println("Checking game status...");
+				if(checkWin() == 1) {
+					System.out.println("Player 2 wins!");
+					endGame();
+				} else if (checkWin() == 0) {
+					System.out.println("It's a draw!");
+					endGame();
+				} else {
+					System.out.println("Switching to Player 1...");
+					currentPlayer = -1; // Switch to other player
+					handlePlayerMove(row, col); // Player 1
 				}
 			}
 		}
@@ -107,7 +137,8 @@ public class GameBoard extends GridPane{
 
 	public boolean makeMove(int row, int col, int playerMark) {
 	    System.out.println("Attempting to make move at: (" + row + ", " + col + ") for player: " + playerMark);
-		if (row >= 0 && col >= 0 && row < 3 && col < 3) { // Check bounds and if the cell is empty
+		if (row >= 0 && col >= 0 && row < 3 && col < 3) { // Check bounds
+			// Make the move if the cell is empty
 			if (playerMark == 0 || board[row][col] == 0) {
 				board[row][col] = playerMark; // Make the move
 				System.out.println("Move successful!");
@@ -198,6 +229,14 @@ public class GameBoard extends GridPane{
 
 	public void setHumanPlayer(Player humanPlayer) {
 		this.humanPlayer = humanPlayer;
+	}
+
+	public Player getPlayer2() {
+		return player2;
+	}
+
+	public void setPlayer2(Player player2) {
+		this.player2 = player2;
 	}
 
 }
