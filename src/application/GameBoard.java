@@ -1,9 +1,13 @@
 package application;
 
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.shape.Line;
 
-public class GameBoard extends GridPane{
+public class GameBoard extends VBox{
 	
 	// Create a 2D array to represent the game board
 	private int [][] board;
@@ -19,22 +23,58 @@ public class GameBoard extends GridPane{
 	// Create another human player in case 
 	private Player player2;
 	
+	// Scoreboard to keep track of the score
+	private int player1Score = 0;
+	private int aiScore = 0;
+	private int player2Score = 0;
+	private int drawScore = 0;
+	
+	private Label scoreLabel;
+	
 	// Create a variable to keep track of the current player
 	private int currentPlayer = 1;
 	
+	// Create a line to represent the winning line
+	private Line winningLine;
+	
+	// Create a GridPane to hold the game board
+	private GridPane boardPane;
+	
 	// Create a constructor to initialize the game board
 	public GameBoard() {
-		board = new int[BOARD_SIZE][BOARD_SIZE];
-		setHumanPlayer(new Player(1) {
-			@Override
-			public Move findBestMove(GameBoard board) {
-				// Human player does not need to find the best move
-				return null;
-			}
-		});
-		aiPlayer = new AIPlayer(-1); // AI player is player 2 as O
-		intializeBoard();
+	    board = new int[BOARD_SIZE][BOARD_SIZE];
+	    boardPane = new GridPane();
+	    
+	    // Initialize players
+	    setHumanPlayer(new Player(1) {
+	        @Override
+	        public Move findBestMove(GameBoard board) {
+	            // Human player does not need to find the best move
+	            return null;
+	        }
+	    });
+	    aiPlayer = new AIPlayer(-1); // AI player is player 2 as O
+
+	    // Initialize the winning line (should be done before it's added to the StackPane)
+	    winningLine = new Line();
+	    winningLine.setVisible(false);
+	    winningLine.getStyleClass().add("winning-line");
+	    
+	    // Initialize the game board and scoreboard
+	    intializeBoard();
+	    intializeScoreBoard();
+	    
+	    // Create a StackPane to hold the game board and the winning line
+	    StackPane stackPane = new StackPane(boardPane, winningLine);
+	    
+	    winningLine.toFront(); // Send the winning line to the front
+
+	    // Add the score board and the stack pane to the VBox
+	    this.getChildren().addAll(scoreLabel, stackPane);
+	    this.setAlignment(javafx.geometry.Pos.CENTER); // Align to the center
+	    this.setSpacing(10); // Set spacing between the score board and the game board
 	}
+
 	
 	private void intializeBoard() {
 		// TODO Initialize the game board with buttons and add them to the GridPane
@@ -46,10 +86,16 @@ public class GameBoard extends GridPane{
 				int finalCol = col;
 				btn.setOnAction(e -> handlePlayerMove(finalRow, finalCol));
 				buttons[row][col] = btn;
-				this.add(btn, col, row);
+				boardPane.add(btn, col, row);
 			}
 		}
-		this.getStyleClass().add("game-board");
+		boardPane.getStyleClass().add("game-board");
+	}
+	
+	private void intializeScoreBoard() {
+		// TODO Initialize the score board
+		scoreLabel = new Label("Player: " + player1Score + " AI: " + aiScore + " Draw: " + drawScore);
+		scoreLabel.getStyleClass().add("score-label");
 	}
 
 	private void handlePlayerMove(int row, int col) {
@@ -67,7 +113,7 @@ public class GameBoard extends GridPane{
 					System.out.println("Player wins!");
 					endGame();
 				} else if (checkWin() == 0) {
-					System.out.println("It's a draw!");
+					System.out.println("It's a draw");
 					endGame();
 				} else {
 					System.out.println("Switching to AI player...");
@@ -78,32 +124,6 @@ public class GameBoard extends GridPane{
 		}
 	}
 	
-	private void handlePlayer2Move(int row, int col) {
-		// TODO Auto-generated method stub
-		if(currentPlayer == 1) {  // Ensure its the player's turn
-			System.out.println("Player is making a move...");
-			if(makeMove(row, col, currentPlayer)) {
-				System.out.println("Move successful!");
-				buttons[row][col].setText("O");  // Update the button text
-				buttons[row][col].setDisable(true);  // Disable the button
-				printBoardState(this);  // Print the board
-				// Check the game status
-				System.out.println("Checking game status...");
-				if(checkWin() == 1) {
-					System.out.println("Player 2 wins!");
-					endGame();
-				} else if (checkWin() == 0) {
-					System.out.println("It's a draw!");
-					endGame();
-				} else {
-					System.out.println("Switching to Player 1...");
-					currentPlayer = -1; // Switch to other player
-					handlePlayerMove(row, col); // Player 1
-				}
-			}
-		}
-	}
-
 	
 	private void aiMove() {
 		if(currentPlayer == -1) {
@@ -132,9 +152,74 @@ public class GameBoard extends GridPane{
 	private void endGame() {
 		// TODO Auto-generated method stub
 		System.out.println("Game over!");
+		
+		// Check for a winning line
+		int[] winCoordinates = checkWinWithCoordinates();
+		
+		if(winCoordinates != null) {
+			drawWinningLine(winCoordinates[0], winCoordinates[1], winCoordinates[2], winCoordinates[3]);
+		}
+		
+		int result = checkWin();
+		if (result == 1) {
+			player1Score++;
+		} else if (result == -1) {
+			aiScore++;
+		} else {
+			drawScore++;
+		}
+		
+		updateScoreBoard();
 		resetBoard();  // Reset the game board
 	}
+	
+	private void drawWinningLine(int startRow, int startCol, int endRow, int endCol) {
+	    // Force layout updates on the GridPane and StackPane
+	    boardPane.applyCss();
+	    boardPane.layout();
+	    
+	    // Get the buttons
+	    Button startButton = buttons[startRow][startCol];
+	    Button endButton = buttons[endRow][endCol];
 
+	    // Get the center positions of the buttons relative to the scene
+	    double startX = startButton.localToScene(startButton.getBoundsInLocal()).getMinX() + startButton.getWidth() / 2;
+	    double startY = startButton.localToScene(startButton.getBoundsInLocal()).getMinY() + startButton.getHeight() / 2;
+	    double endX = endButton.localToScene(endButton.getBoundsInLocal()).getMinX() + endButton.getWidth() / 2;
+	    double endY = endButton.localToScene(endButton.getBoundsInLocal()).getMinY() + endButton.getHeight() / 2;
+
+	    // Debugging logs to confirm coordinates
+	    System.out.println("Start button center (X, Y): (" + startX + ", " + startY + ")");
+	    System.out.println("End button center (X, Y): (" + endX + ", " + endY + ")");
+
+	    // Set the coordinates of the winning line
+	    winningLine.setStartX(startX);
+	    winningLine.setStartY(startY);
+	    winningLine.setEndX(endX);
+	    winningLine.setEndY(endY);
+
+	    // Make the line visible
+	    winningLine.setVisible(true);
+
+	    // Bring the line to the front to ensure visibility
+	    winningLine.toFront();
+	}
+
+
+
+	private void updateScoreBoard() {
+		// TODO Auto-generated method stub
+		scoreLabel.setText("Player: " + player1Score + " AI: " + aiScore + " Draw: " + drawScore);
+	}
+
+	public void resetScoreBoard() {
+		player1Score = 0;
+		aiScore = 0;
+		player2Score = 0;
+		drawScore = 0;
+		updateScoreBoard();
+	}
+	
 	public boolean makeMove(int row, int col, int playerMark) {
 	    System.out.println("Attempting to make move at: (" + row + ", " + col + ") for player: " + playerMark);
 		if (row >= 0 && col >= 0 && row < 3 && col < 3) { // Check bounds
@@ -156,24 +241,24 @@ public class GameBoard extends GridPane{
 		// Check rows
 		for (int i = 0; i < BOARD_SIZE; i++) {
 			if (board[i][0] != 0 && board[i][0] == board[i][1] && board[i][0] == board[i][2]) {
-				return board[i][0];
+				return board[i][0]; // return the start and end of the row
 			}
 		}
 		
 		// Check columns
 		for (int i = 0; i < BOARD_SIZE; i++) {
 			if (board[0][i] != 0 && board[0][i] == board[1][i] && board[0][i] == board[2][i]) {
-				return board[0][i];
+				return board[0][i]; // return the start and end of the column
 			}
 		}
 		
 		// Check diagonals
 		if (board[0][0] != 0 && board[0][0] == board[1][1] && board[0][0] == board[2][2]) {
-			return board[0][0];
+			return board[0][0]; // top left to bottom right diagonal
 		}
 		
 		if (board[0][2] != 0 && board[0][2] == board[1][1] && board[0][2] == board[2][0]) {
-			return board[0][2];
+			return board[0][2]; // top right to bottom left diagonal
 		}
 		
 		// Check for a draw
@@ -195,6 +280,33 @@ public class GameBoard extends GridPane{
 		return -2;// Return -2 if the game is still in progress
 	}
 	
+	public int[] checkWinWithCoordinates() {
+		// Check rows
+		for (int i = 0; i < BOARD_SIZE; i++) {
+			if (board[i][0] != 0 && board[i][0] == board[i][1] && board[i][0] == board[i][2]) {
+				return new int[] {i, 0, i, 2}; // return the start and end of the row
+			}
+		}
+		
+		// Check columns
+		for (int i = 0; i < BOARD_SIZE; i++) {
+			if (board[0][i] != 0 && board[0][i] == board[1][i] && board[0][i] == board[2][i]) {
+				return new int[] {0, i, 2, i}; // return the start and end of the column
+			}
+		}
+		
+		// Check diagonals
+		if (board[0][0] != 0 && board[0][0] == board[1][1] && board[0][0] == board[2][2]) {
+			return new int[] {0, 0, 2, 2}; // top left to bottom right diagonal
+		}
+		
+		if (board[0][2] != 0 && board[0][2] == board[1][1] && board[0][2] == board[2][0]) {
+			return new int[] {0, 2, 2, 0}; // top right to bottom left diagonal
+		}
+		
+		return null; // Return null if no one wins
+	}
+	
 	public void resetBoard() {
 		for (int i = 0; i < BOARD_SIZE; i++) {
 			for (int j = 0; j < BOARD_SIZE; j++) {
@@ -204,6 +316,7 @@ public class GameBoard extends GridPane{
 			}
 		}
 		System.out.println("Board reset.");
+		winningLine.setVisible(false); // Hide the winning line
 		currentPlayer = 1; // Reset the current player to player 1
 	}
 	
@@ -237,6 +350,38 @@ public class GameBoard extends GridPane{
 
 	public void setPlayer2(Player player2) {
 		this.player2 = player2;
+	}
+
+	public int getPlayer1Score() {
+		return player1Score;
+	}
+
+	public void setPlayer1Score(int player1Score) {
+		this.player1Score = player1Score;
+	}
+
+	public int getAiScore() {
+		return aiScore;
+	}
+
+	public void setAiScore(int aiScore) {
+		this.aiScore = aiScore;
+	}
+
+	public int getPlayer2Score() {
+		return player2Score;
+	}
+
+	public void setPlayer2Score(int player2Score) {
+		this.player2Score = player2Score;
+	}
+
+	public int getDrawScore() {
+		return drawScore;
+	}
+
+	public void setDrawScore(int drawScore) {
+		this.drawScore = drawScore;
 	}
 
 }

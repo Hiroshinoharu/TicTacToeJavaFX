@@ -5,6 +5,18 @@
 	-fx-background-color: #E0E0E0;
 }
 
+/* Style for the score board */
+.score-label{
+	-fx-font-size: 20px;
+	-fx-padding: 10px;
+}
+
+/* Style for the line */
+.winning-line{
+	-fx-stroke: red;
+	-fx-stroke-width: 5;
+}
+
 /* Style for the gameboard */
 .game-board{
 	-fx-border-color: black;
@@ -28,7 +40,7 @@
 
 /*Style for the title */
 .game-label{
-	-fx-text-alignment: justify;
+	-fx-text-alignment: center;
 	-fx-font-size: 24px;
 	-fx-font-weight: bold;
 	-fx-text-fill: #333333;
