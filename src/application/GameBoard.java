@@ -1,5 +1,7 @@
 package application;
 
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
@@ -99,30 +101,32 @@ public class GameBoard extends VBox{
 	}
 
 	private void handlePlayerMove(int row, int col) {
-		// TODO Auto-generated method stub
-		if(currentPlayer == 1) {  // Ensure its the player's turn
-			System.out.println("Player is making a move...");
-			if(makeMove(row, col, currentPlayer)) {
-				System.out.println("Move successful!");
-				buttons[row][col].setText("X");  // Update the button text
-				buttons[row][col].setDisable(true);  // Disable the button
-				printBoardState(this);  // Print the board
-				// Check the game status
-				System.out.println("Checking game status...");
-				if(checkWin() == 1) {
-					System.out.println("Player wins!");
-					endGame();
-				} else if (checkWin() == 0) {
-					System.out.println("It's a draw");
-					endGame();
-				} else {
-					System.out.println("Switching to AI player...");
-					currentPlayer = -1; // Switch to AI player
-					aiMove(); // AI makes a move
-				}
-			}
-		}
+	    if (currentPlayer == 1) {  // Ensure it's the player's turn
+	        System.out.println("Player is making a move...");
+	        if (makeMove(row, col, currentPlayer)) {
+	            System.out.println("Move successful!");
+	            buttons[row][col].setText("X");
+	            buttons[row][col].setDisable(true);
+	            printBoardState(this);
+
+	            int gameResult = checkWin();  // Call checkWin only once
+	            System.out.println("Checking game status...");
+
+	            if (gameResult == 1) {
+	                System.out.println("Player wins!");
+	                endGame();
+	            } else if (gameResult == 0) {
+	                System.out.println("It's a draw");
+	                endGame();
+	            } else {
+	                System.out.println("Switching to AI player...");
+	                currentPlayer = -1;  // Switch to AI player
+	                aiMove();
+	            }
+	        }
+	    }
 	}
+
 	
 	
 	private void aiMove() {
@@ -161,6 +165,7 @@ public class GameBoard extends VBox{
 		}
 		
 		int result = checkWin();
+		
 		if (result == 1) {
 			player1Score++;
 		} else if (result == -1) {
@@ -170,40 +175,63 @@ public class GameBoard extends VBox{
 		}
 		
 		updateScoreBoard();
-		resetBoard();  // Reset the game board
+		
+		// Sends a pop-up message to the user
+		Alert alert = new Alert(AlertType.INFORMATION);
+		
+		alert.setTitle("Game Over");
+		
+		alert.setHeaderText(null);
+		
+		if (result == 1) {
+			alert.setContentText("Player wins!");
+		} else if (result == -1) {
+			alert.setContentText("AI wins!");
+		} else {
+			alert.setContentText("It's a draw!");
+		}
+		
+		alert.showAndWait();
+		
+		resetBoard();
 	}
 	
 	private void drawWinningLine(int startRow, int startCol, int endRow, int endCol) {
-	    // Force layout updates on the GridPane and StackPane
+	    // Ensure the board pane's CSS is applied and its layout is updated
 	    boardPane.applyCss();
 	    boardPane.layout();
-	    
-	    // Get the buttons
+
+	    // Get the start and end buttons
 	    Button startButton = buttons[startRow][startCol];
 	    Button endButton = buttons[endRow][endCol];
 
-	    // Get the center positions of the buttons relative to the scene
-	    double startX = startButton.localToScene(startButton.getBoundsInLocal()).getMinX() + startButton.getWidth() / 2;
-	    double startY = startButton.localToScene(startButton.getBoundsInLocal()).getMinY() + startButton.getHeight() / 2;
-	    double endX = endButton.localToScene(endButton.getBoundsInLocal()).getMinX() + endButton.getWidth() / 2;
-	    double endY = endButton.localToScene(endButton.getBoundsInLocal()).getMinY() + endButton.getHeight() / 2;
+	    // Convert the local coordinates of the buttons to the scene's coordinates
+	    double startXScene = startButton.localToScene(startButton.getBoundsInLocal()).getMinX() + startButton.getWidth() / 2;
+	    double startYScene = startButton.localToScene(startButton.getBoundsInLocal()).getMinY() + startButton.getHeight() / 2;
+	    double endXScene = endButton.localToScene(endButton.getBoundsInLocal()).getMinX() + endButton.getWidth() / 2;
+	    double endYScene = endButton.localToScene(endButton.getBoundsInLocal()).getMinY() + endButton.getHeight() / 2;
+
+	    // Convert the scene coordinates directly to the StackPane's local coordinates
+	    double localStartX = boardPane.getParent().sceneToLocal(startXScene, startYScene).getX();
+	    double localStartY = boardPane.getParent().sceneToLocal(startXScene, startYScene).getY();
+	    double localEndX = boardPane.getParent().sceneToLocal(endXScene, endYScene).getX();
+	    double localEndY = boardPane.getParent().sceneToLocal(endXScene, endYScene).getY();
 
 	    // Debugging logs to confirm coordinates
-	    System.out.println("Start button center (X, Y): (" + startX + ", " + startY + ")");
-	    System.out.println("End button center (X, Y): (" + endX + ", " + endY + ")");
+	    System.out.println("Start button center (X, Y): (" + localStartX + ", " + localStartY + ")");
+	    System.out.println("End button center (X, Y): (" + localEndX + ", " + localEndY + ")");
 
-	    // Set the coordinates of the winning line
-	    winningLine.setStartX(startX);
-	    winningLine.setStartY(startY);
-	    winningLine.setEndX(endX);
-	    winningLine.setEndY(endY);
+	    // Set the coordinates for the winning line
+	    winningLine.setStartX(localStartX);
+	    winningLine.setStartY(localStartY);
+	    winningLine.setEndX(localEndX);
+	    winningLine.setEndY(localEndY);
 
 	    // Make the line visible
 	    winningLine.setVisible(true);
-
-	    // Bring the line to the front to ensure visibility
-	    winningLine.toFront();
+	    winningLine.toFront();  // Bring the line to the front
 	}
+
 
 
 
@@ -281,31 +309,37 @@ public class GameBoard extends VBox{
 	}
 	
 	public int[] checkWinWithCoordinates() {
-		// Check rows
-		for (int i = 0; i < BOARD_SIZE; i++) {
-			if (board[i][0] != 0 && board[i][0] == board[i][1] && board[i][0] == board[i][2]) {
-				return new int[] {i, 0, i, 2}; // return the start and end of the row
-			}
-		}
-		
-		// Check columns
-		for (int i = 0; i < BOARD_SIZE; i++) {
-			if (board[0][i] != 0 && board[0][i] == board[1][i] && board[0][i] == board[2][i]) {
-				return new int[] {0, i, 2, i}; // return the start and end of the column
-			}
-		}
-		
-		// Check diagonals
-		if (board[0][0] != 0 && board[0][0] == board[1][1] && board[0][0] == board[2][2]) {
-			return new int[] {0, 0, 2, 2}; // top left to bottom right diagonal
-		}
-		
-		if (board[0][2] != 0 && board[0][2] == board[1][1] && board[0][2] == board[2][0]) {
-			return new int[] {0, 2, 2, 0}; // top right to bottom left diagonal
-		}
-		
-		return null; // Return null if no one wins
+	    // Check rows
+	    for (int i = 0; i < BOARD_SIZE; i++) {
+	        if (board[i][0] != 0 && board[i][0] == board[i][1] && board[i][1] == board[i][2]) {
+	            System.out.println("Row " + i + " win detected.");
+	            return new int[] {i, 0, i, 2}; 
+	        }
+	    }
+
+	    // Check columns
+	    for (int i = 0; i < BOARD_SIZE; i++) {
+	        if (board[0][i] != 0 && board[0][i] == board[1][i] && board[1][i] == board[2][i]) {
+	            System.out.println("Column " + i + " win detected.");
+	            return new int[] {0, i, 2, i}; 
+	        }
+	    }
+
+	    // Check diagonals
+	    if (board[0][0] != 0 && board[0][0] == board[1][1] && board[1][1] == board[2][2]) {
+	        System.out.println("Diagonal top-left to bottom-right win detected.");
+	        return new int[] {0, 0, 2, 2}; 
+	    }
+
+	    if (board[0][2] != 0 && board[0][2] == board[1][1] && board[1][1] == board[2][0]) {
+	        System.out.println("Diagonal top-right to bottom-left win detected.");
+	        return new int[] {0, 2, 2, 0}; 
+	    }
+
+	    System.out.println("No win detected.");
+	    return null; 
 	}
+
 	
 	public void resetBoard() {
 		for (int i = 0; i < BOARD_SIZE; i++) {
