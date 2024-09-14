@@ -1,30 +1,34 @@
 package application;
 
+// Move class represents a move on the Tic-Tac-Toe game board
 public class Move {
-	
-	private int row;
-	private int col;
-	
-	public Move(int r, int c) {
-		row = r;
-		col = c;
-	}
 
-	public int getRow() {
-		return row;
-	}
+    private int row; // Row index for the move
+    private int col; // Column index for the move
 
-	public void setRow(int row) {
-		this.row = row;
-	}
+    // Constructor to initialize the move with a specific row and column
+    public Move(int r, int c) {
+        row = r;
+        col = c;
+    }
 
-	public int getCol() {
-		return col;
-	}
+    // Getter for the row index
+    public int getRow() {
+        return row;
+    }
 
-	public void setCol(int col) {
-		this.col = col;
-	}
+    // Setter for the row index
+    public void setRow(int row) {
+        this.row = row;
+    }
 
-	
+    // Getter for the column index
+    public int getCol() {
+        return col;
+    }
+
+    // Setter for the column index
+    public void setCol(int col) {
+        this.col = col;
+    }
 }
