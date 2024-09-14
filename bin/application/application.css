@@ -11,12 +11,6 @@
 	-fx-padding: 10px;
 }
 
-/* Style for the line */
-.winning-line{
-	-fx-stroke: red;
-	-fx-stroke-width: 5;
-}
-
 /* Style for the gameboard */
 .game-board{
 	-fx-border-color: black;

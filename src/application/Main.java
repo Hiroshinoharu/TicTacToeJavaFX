@@ -30,9 +30,9 @@ public class Main extends Application {
 			root.setCenter(gameBoard);
 			
 			// Create a scene with the BorderPane as the root node
-			Scene scene = new Scene(root,700,700);
+			Scene scene = new Scene(root,600,600);
 			
-			// Makes the window resizable
+			// Makes the window unresizable
 			primaryStage.setResizable(false);
 			
 			// Add a CSS file to the scene
