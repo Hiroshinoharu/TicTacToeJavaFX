@@ -165,6 +165,7 @@ public class GameBoard extends VBox {
             if (makeMove(bestMove.getRow(), bestMove.getCol(), currentPlayer)) { // Attempt to make the move
                 buttons[bestMove.getRow()][bestMove.getCol()].setText(aiPlayerSymbol); // Set button text
                 buttons[bestMove.getRow()][bestMove.getCol()].setDisable(true); // Disable the button after move
+                printBoardState(this); // Print current board state
 
                 int winPositions[][] = new int[3][2];
                 int gameResult = checkWin(winPositions); // Check game result
