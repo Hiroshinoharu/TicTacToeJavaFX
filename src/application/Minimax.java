@@ -74,7 +74,7 @@ public class Minimax {
                     board.makeMove(i, j, playerMark); // Make the move
 
                     // Evaluate move using minimax with alpha-beta pruning
-                    int moveVal = minimax(board, 0, playerMark != 1, Integer.MIN_VALUE, Integer.MAX_VALUE);
+                    int moveVal = minimax(board, 0, playerMark !=1, Integer.MIN_VALUE, Integer.MAX_VALUE);
 
                     board.makeMove(i, j, 0); // Undo the move
 

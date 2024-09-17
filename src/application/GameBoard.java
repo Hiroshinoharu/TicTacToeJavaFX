@@ -298,7 +298,7 @@ public class GameBoard extends VBox {
                 buttons[i][j].setStyle(null); // Remove styles
             }
         }
-        currentPlayer = 1; // Reset to player 1
+        determineFirstMove(); // Determine who goes first
     }
 
     // Print the current state of the board (for debugging)
